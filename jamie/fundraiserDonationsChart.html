@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link href="css/styles.css" type="text/css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Animal Rescue NI</title>
+</head>
+
+<body>
+    <h1 id="title">Animal Rescue NI <xsmall>&copy; 2026</xsmall>
+    </h1>
+    <div id="header">
+        <h2>Welcome to the Animal Rescue NI</h2>
+        <h3>Helping restore our wildlife!</h3>
+        <div class="return-buttons">
+            <h4><a href="memberIndex.html">Return to Member Dashboard</a><a href="index.html">Return
+                    to Main Menu</a><a href="memberReports.html">Return to Member Reports</a></h4>
+        </div>
+        <div class="main">
+            <br>
+            <hr>
+            <br>
+            <h2>Fundraisers With the Most Donations and the Average</h2>
+
+            <br>
+            <canvas id="myCityChart"></canvas>
+
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/myJs.js"></script>
+    <script>
+        const printChart = async () => {
+            const output = document.querySelector("#message");
+            //Implement my SQL report
+            const sql = `SELECT UPPER(f.fundraiserName) AS fundraiserNameUpper,COUNT(d.donationID) AS totalDonations,ROUND(AVG(d.amountDonated), 2) AS averageDonationAmount FROM tblfundraiser f INNER JOIN tbldonations d ON f.fundraiserID = d.fundraiserID GROUP BY UPPER(f.fundraiserName) HAVING totalDonations > 1 ORDER BY totalDonations DESC LIMIT 3;`;
+
+            const result = await runQuery(sql);
+            //If there is no data allow it to return an error message
+            if (!result || !result.data || result.data.length === 0) {
+                output.textContent = "No Rows Returned";
+                output.className = "message error";
+                return;
+            }
+
+            const rows = result.data;
+            const labels = [];
+            const donations = [];
+
+            for (let row of rows) {
+                labels.push(row.fundraiserNameUpper);
+                donations.push(Number(row.totalDonations));
+            }
+
+            // Create the table
+            const table = document.createElement("table");
+            table.className = "report-table";
+            //Create the header
+            const headerRow = document.createElement("tr");
+            headerRow.style.backgroundColor = "#2E8B57";
+            //Name the headers and implement them 
+            const headers = ["Fundraiser", "Total Donations", "Average Donation (£)"];
+            for (let heading of headers) {
+                const th = document.createElement("th");
+                th.textContent = heading;
+                headerRow.appendChild(th);
+            }
+            table.appendChild(headerRow);
+            //Create the rows in the table and fill them with live data
+            for (let row of rows) {
+                const tr = document.createElement("tr");
+
+                const tdFundraiserName = document.createElement("td");
+                const tdTotalDonations = document.createElement("td");
+                const tdAvgDonation = document.createElement("td");
+
+                tdFundraiserName.textContent = row.fundraiserNameUpper;
+                tdTotalDonations.textContent = row.totalDonations;
+                tdAvgDonation.textContent = `£${row.averageDonationAmount} `;
+
+                tr.appendChild(tdFundraiserName);
+                tr.appendChild(tdTotalDonations);
+                tr.appendChild(tdAvgDonation);
+                table.appendChild(tr);
+            }
+
+            // Create the chart as a horizontal bar chart
+            const chartCanvas = document.querySelector("#myCityChart");
+            chartCanvas.parentNode.insertBefore(table, chartCanvas);
+
+            new Chart(chartCanvas, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Total Donations",
+                        data: donations,
+                        backgroundColor: [
+                            "#2E8B57",
+                            "#6CC24A",
+                            "#8B4513"
+                        ],
+                        borderColor: "#000000",
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                color: "black",
+                                font: { weight: "bold" }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: "Top 3 Fundraisers by Total Donations",
+                            color: "#2E8B57",
+                            font: { size: 16, weight: "bold" }
+                        }
+                    }
+                }
+            });
+        };
+        document.addEventListener("DOMContentLoaded", printChart);
+    </script>
+</body>
+
+</html>

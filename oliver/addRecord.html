@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WWF Donations Management</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <!-- The page wrapper keeps the banner, navigation and content grouped together. -->
+  <div class="page">
+    <!-- The banner introduces the topic of this example page. -->
+    <div class="banner">
+      <h1>WWF Donations Management</code></h1>
+      <p></p>
+    </div>
+
+    <!-- Simple navigation so users can move between the examples. -->
+   <div class="nav">
+    <a href="donationsMain.html">return to options</a> |
+    <a href="addRecord.html">Add a Record</a> |
+    <a href="deleteRecords.html">Delete a Record</a> |
+    <a href="updateRecords.html">Update a Record</a> |
+    <a href="donationReports.html">Donation Reports</a> |
+    </div>
+
+    <!-- The main section contains the form and the message area. -->
+    <div class="main">
+      <h2>Add a Donation Record</h2>
+      <p>Enter the values below and click the button to insert a new row into the <code>Donations</code> table.</p>
+      <br>
+      <hr>
+      <br>
+
+      <!-- This form collects the values needed for one new donation record. -->
+      <form id="donationform">
+
+        <div class="form-row">
+          <label for="donationDate">Donation Date</label>
+          <input type="date" id="donationDate">
+        </div>
+
+        <div class="form-row">
+          <label for="amountDonated">Donation Amount</label>
+          <input type="number" id="amountDonated">
+        </div>
+
+        <div class="form-row">
+          <label for="paymentMethod">Payment Method</label>
+          <input type="text" id="paymentMethod">
+        </div>
+
+        <div class="form-row">
+          <label for="memberID">Member ID</label>
+          <input type="number" id="memberID">
+        </div>
+
+        <div class="form-row">
+          <label for="fundraiserID">Fundraiser ID</label>
+          <input type="number" id="fundraiserID">
+        </div>
+
+        <button type="submit">Add Record</button>
+      </form>
+
+      <!-- This empty box is filled with success or error messages by JavaScript. -->
+      <div id="output" class="message"></div>
+    </div>
+  </div>
+
+  <script src="js/myJs.js"></script>
+  <script>
+    // Show feedback to the user after validation or a database action.
+    const showMessage = (text, type) => {
+      const output = document.querySelector("#output");
+      output.textContent = text;
+      output.className = `message ${type}`;
+    };
+
+    document.querySelector("#donationform").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const donation = {
+        donationDate: document.querySelector("#donationDate").value.trim(),
+        amountDonated: Number(document.querySelector("#amountDonated").value),
+        paymentMethod: document.querySelector("#paymentMethod").value.trim(),
+        memberID: Number(document.querySelector("#memberID").value),
+        fundraiserID: Number(document.querySelector("#fundraiserID").value)
+      }
+
+      // console.log(donation);
+
+      const validationMessage = validateDonation(donation);
+      // console.log(validationMessage);
+      if (validationMessage) {
+        showMessage(validationMessage, "error");
+        return;
+      }
+
+      const sql = `
+          INSERT INTO tbldonations (donationDate, amountDonated, paymentMethod, memberID, fundraiserID)
+          VALUES (
+          '${escapeSql(donation.donationDate)}',
+          ${donation.amountDonated},
+          '${escapeSql(donation.paymentMethod)}',
+          ${donation.memberID},
+          ${donation.fundraiserID}
+          );
+      `;
+
+      // console.log(sql);
+
+      const result = await runQuery(sql);
+
+      if (result && result.success) {
+        showMessage("donation record added successfully.", "success");
+        document.querySelector("#donationform").reset();
+        return;
+      }
+
+      if (result && result.error) {
+        showMessage(result.error, "error");
+      } else {
+        showMessage("Unable to add the record.", "error");
+      }
+
+    });
+
+  </script>
+</body>
+
+</html>

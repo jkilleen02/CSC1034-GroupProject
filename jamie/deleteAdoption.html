@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link href="css/styles.css" type="text/css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Animal Rescue NI</title>
+</head>
+
+<body>
+    <h1 id="title">Animal Rescue NI <xsmall>&copy; 2026</xsmall>
+    </h1>
+    <div id="header">
+        <h2>Welcome to the Animal Rescue NI</h2>
+        <h3>Helping restore our wildlife!</h3>
+        <div class="return-buttons">
+            <h4>
+                <a href="adoptionsIndex.html">Return to Adoption Dashboard</a><a href="index.html">Return to Main
+                    Menu</a>
+            </h4>
+        </div>
+        <div class="main">
+            <br>
+            <hr>
+            <br>
+            <h2>Delete An Adoption</h2>
+            <h3>Select An Adoption from the table</h3>
+            <div id="tableOutput"></div>
+            <br>
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script src="js/myJs.js"></script>
+    <script>
+        const showMessage = (text, type) => {
+            const output = document.querySelector('#message');
+            output.textContent = text;
+            output.className = `message ${type}`;
+        };
+
+        const printTable = async () => {
+            const output = document.querySelector("#tableOutput");
+            output.textContent = "";
+            const sql = "SELECT * FROM tbladoption ORDER BY adoptionID;";
+            const result = await runQuery(sql);
+            if (!result || !result.data || result.data.length === 0) {
+                output.textContent = "No Rows Returned";
+                return;
+            }
+            const rows = result.data;
+            const table = document.createElement("table");
+            table.className = "report-table";
+            const headerRow = document.createElement("tr");
+            table.appendChild(headerRow);
+            const headings = ["Adoption ID", "Adoption Fee", "Animal ID", "Adoption Status", "Member ID", "Adoption Date", "Action"];
+            for (let heading of headings) {
+                const th = document.createElement("th");
+                th.textContent = heading;
+                headerRow.appendChild(th);
+            }
+            for (let row of rows) {
+                const tr = document.createElement("tr");
+
+                const tdAdoptionID = document.createElement("td");
+                tdAdoptionID.textContent = row.adoptionID;
+                tr.appendChild(tdAdoptionID);
+
+                const tdAdoptionFee = document.createElement("td");
+                tdAdoptionFee.textContent = row.adoptionFee;
+                tr.appendChild(tdAdoptionFee);
+
+                const tdAnimalID = document.createElement("td");
+                tdAnimalID.textContent = row.animalID;
+                tr.appendChild(tdAnimalID);
+
+                const tdAdoptionStatus = document.createElement("td");
+                tdAdoptionStatus.textContent = row.adoptionStatus;
+                tr.appendChild(tdAdoptionStatus);
+
+                const tdMemberID = document.createElement("td");
+                tdMemberID.textContent = row.memberID;
+                tr.appendChild(tdMemberID);
+
+                const tdAdoptionDate = document.createElement("td");
+                tdAdoptionDate.textContent = row.adoptionDate;
+                tr.appendChild(tdAdoptionDate);
+
+                const tdDelete = document.createElement("td");
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete " + row.adoptionID;
+                deleteButton.addEventListener("click", async () => {
+                    const shouldDelete = confirm(`Delete Adoption ${row.adoptionID}?`);
+                    if (!shouldDelete) {
+                        return;
+                    }
+                    const deleteSQL = `DELETE FROM tbladoption WHERE adoptionID=${row.adoptionID};`;
+                    console.log(deleteSQL);
+                    const deleteResult = await runQuery(deleteSQL);
+                    if (deleteResult && deleteResult.success) {
+                        showMessage("Adoption record deleted SUCCESSFULLY", "success");
+                        printTable();
+                        return;
+                    }
+                    if (deleteResult && deleteResult.error) {
+                        showMessage(deleteResult.error, "error");
+                    } else {
+                        showMessage("Adoption record delete FAILED", "error");
+                    }
+                });
+                tdDelete.appendChild(deleteButton);
+                tr.appendChild(tdDelete);
+                table.appendChild(tr);
+            }
+            output.appendChild(table);
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            printTable();
+        });
+    </script>
+</body>
+
+</html>

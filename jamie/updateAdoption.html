@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link href="css/styles.css" type="text/css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Animal Rescue NI</title>
+</head>
+
+<body>
+    <h1 id="title">Animal Rescue NI <xsmall>&copy; 2026</xsmall>
+    </h1>
+    <div id="header">
+        <h2>Welcome to the Animal Rescue NI</h2>
+        <h3>Helping restore our wildlife!</h3>
+        <div class="return-buttons">
+            <h4>
+                <a href="adoptionsIndex.html">Return to Adoption Dashboard</a>
+                <a href="index.html">Return to Main Menu</a>
+            </h4>
+        </div>
+        <div class="main">
+            <br>
+            <hr>
+            <br>
+            <h2>Update An Adoption</h2>
+            <h3 id="selectedAdoptionText">Choose Below</h3>
+            <div id="tableOutput"></div>
+
+            <form id="updateForm">
+                <input type="hidden" id="adoptionID">
+                <div class="form-row">
+                    <label for="adoptionFee">Adoption Fee</label>
+                    <input type="text" id="adoptionFee">
+                </div>
+                <div class="form-row">
+                    <label for="animalID">Animal ID</label>
+                    <input type="text" id="animalID">
+                </div>
+                <div class="form-row">
+                    <label for="adoptionStatus">Adoption Status</label>
+                    <input type="text" id="adoptionStatus">
+                </div>
+                <div class="form-row">
+                    <label for="memberID">Member ID</label>
+                    <input type="text" id="memberID">
+                </div>
+                <div class="form-row">
+                    <label for="adoptionDate">Adoption Date</label>
+                    <input type="date" id="adoptionDate">
+                </div>
+                <button type="submit">Update Adoption</button>
+            </form>
+
+            <div id="output"></div>
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script src="js/myJs.js"></script>
+    <script>
+        let selectedAdoptionID = null;
+
+        const showMessage = (text, type) => {
+            const output = document.querySelector("#message");
+            output.textContent = text;
+            output.className = `message ${type}`;
+        };
+
+        const clearMessage = () => {
+            const output = document.querySelector("#message");
+            output.textContent = "";
+            output.className = "message";
+        };
+
+        const resetForm = () => {
+            const form = document.querySelector("#updateForm");
+            const selectedAdoptionText = document.querySelector("#selectedAdoptionText");
+            form.reset();
+            selectedAdoptionID = null;
+            selectedAdoptionText.textContent = "Select an Adoption from the Table";
+        };
+
+        const selectAdoption = (adoption) => {
+            const selectedAdoptionText = document.querySelector("#selectedAdoptionText");
+            selectedAdoptionID = Number(adoption.adoptionID);
+            document.querySelector("#adoptionID").value = adoption.adoptionID;
+            document.querySelector("#adoptionFee").value = adoption.adoptionFee;
+            document.querySelector("#animalID").value = adoption.animalID;
+            document.querySelector("#adoptionStatus").value = adoption.adoptionStatus;
+            document.querySelector("#memberID").value = adoption.memberID;
+            document.querySelector("#adoptionDate").value = adoption.adoptionDate;
+            selectedAdoptionText.textContent = `Updating Adoption ${adoption.adoptionID}`;
+            clearMessage();
+        };
+
+        const printTable = async () => {
+            const output = document.querySelector("#tableOutput");
+            output.textContent = "";
+            const sql = "SELECT * FROM tbladoption ORDER BY adoptionID;";
+            const result = await runQuery(sql);
+            if (!result || !result.data || result.data.length === 0) {
+                output.textContent = "No Rows Returned";
+                return;
+            }
+            const rows = result.data;
+            const table = document.createElement("table");
+            table.className = "report-table";
+            const headerRow = document.createElement("tr");
+            table.appendChild(headerRow);
+            const headings = ["Adoption ID", "Adoption Fee", "Animal ID", "Adoption Status", "Member ID", "Adoption Date", "Action"];
+            for (let heading of headings) {
+                const th = document.createElement("th");
+                th.textContent = heading;
+                headerRow.appendChild(th);
+            }
+            for (let row of rows) {
+                const tr = document.createElement("tr");
+
+                const tdAdoptionId = document.createElement("td");
+                tdAdoptionId.textContent = row.adoptionID;
+                tr.appendChild(tdAdoptionId);
+
+                const tdAdoptionFee = document.createElement("td");
+                tdAdoptionFee.textContent = row.adoptionFee;
+                tr.appendChild(tdAdoptionFee);
+
+                const tdAnimalID = document.createElement("td");
+                tdAnimalID.textContent = row.animalID;
+                tr.appendChild(tdAnimalID);
+
+                const tdAdoptionStatus = document.createElement("td");
+                tdAdoptionStatus.textContent = row.adoptionStatus;
+                tr.appendChild(tdAdoptionStatus);
+
+                const tdMemberID = document.createElement("td");
+                tdMemberID.textContent = row.memberID;
+                tr.appendChild(tdMemberID);
+
+                const tdAdoptionDate = document.createElement("td");
+                tdAdoptionDate.textContent = row.adoptionDate;
+                tr.appendChild(tdAdoptionDate);
+
+                const tdUpdate = document.createElement("td");
+                const updateButton = document.createElement("button");
+                updateButton.textContent = "Update";
+                updateButton.addEventListener("click", () => {
+                    selectAdoption(row);
+                });
+                tdUpdate.appendChild(updateButton);
+                tr.appendChild(tdUpdate);
+                table.appendChild(tr);
+            }
+            output.appendChild(table);
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            resetForm();
+            printTable();
+
+            document.querySelector("#updateForm").addEventListener("submit", async (event) => {
+                event.preventDefault();
+                if (selectedAdoptionID === null) {
+                    showMessage("Select an Adoption from the Table before updating", "error");
+                    return;
+                }
+                const adoption = {
+                    adoptionID: Number(document.querySelector("#adoptionID").value),
+                    adoptionFee: document.querySelector("#adoptionFee").value.trim(),
+                    animalID: Number(document.querySelector("#animalID").value),
+                    adoptionStatus: document.querySelector("#adoptionStatus").value.trim(),
+                    memberID: Number(document.querySelector("#memberID").value),
+                    adoptionDate: document.querySelector("#adoptionDate").value.trim()
+                };
+                const validationMessage = validateAdoption(adoption);
+                if (validationMessage) {
+                    showMessage(validationMessage, "error");
+                    return;
+                }
+                const sql = `
+                    UPDATE tbladoption
+                    SET
+                    adoptionFee='${escapeSql(adoption.adoptionFee)}',
+                    animalID=${adoption.animalID},
+                    adoptionStatus='${escapeSql(adoption.adoptionStatus)}',
+                    memberID=${adoption.memberID},
+                    adoptionDate='${escapeSql(adoption.adoptionDate)}'
+                    WHERE adoptionID=${selectedAdoptionID};
+                `;
+                const result = await runQuery(sql);
+                if (result && result.success) {
+                    showMessage("Adoption Update SUCCESS", "success");
+                    resetForm();
+                    printTable();
+                    return;
+                }
+                if (result && result.error) {
+                    showMessage(result.error, "error");
+                } else {
+                    showMessage("Adoption Update FAILED", "error");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

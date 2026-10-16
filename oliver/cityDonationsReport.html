@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Donations by Town</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- Banner -->
+    <div class="banner">
+      <h1>WWF Donations Management</h1>
+      <p>Top Donations by Town</p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav">
+      <a href="addRecord.html">Add a Record</a> |
+      <a href="deleteRecords.html">Delete a Record</a> |
+      <a href="updateRecords.html">Update a Record</a> |
+      <a href="donationReports.html">Donation Reports</a> |
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+      <h2>Total Donations by Town</h2>
+      <p>Shows which towns have donated the most.</p>
+
+      <br>
+      <hr>
+      <br>
+
+      <button id="loadBtn">Load Report</button>
+
+      <div id="output" class="message"></div>
+      <div id="results"></div>
+
+      <!-- ✅ Chart canvas -->
+      <canvas id="donationChart" style="margin-top:20px;"></canvas>
+    </div>
+  </div>
+
+  <script src="js/myJs.js"></script>
+
+  <script>
+    const output = document.querySelector("#output");
+    const resultsDiv = document.querySelector("#results");
+
+    let chart; // store chart instance
+
+    const showMessage = (text, type) => {
+      output.textContent = text;
+      output.className = `message ${type}`;
+    };
+
+    document.querySelector("#loadBtn").addEventListener("click", async () => {
+
+      const sql = `SELECT 
+  COALESCE(m.memberTown, 'Not specified') AS memberTown,
+  SUM(d.amountDonated) AS totalDonated
+FROM tbldonations d
+JOIN tblmembers m ON d.memberID = m.memberID
+GROUP BY m.memberTown
+ORDER BY totalDonated DESC;
+      `;
+
+      const result = await runQuery(sql);
+
+      console.log("RESULT FROM PHP:", result);
+
+      if (result && result.data && result.data.length > 0) {
+        showMessage("Report loaded successfully.", "success");
+        displayResults(result.data);
+        drawChart(result.data); // draw chart
+      } else {
+        showMessage("No data found.", "error");
+        resultsDiv.innerHTML = "";
+      }
+    });
+
+    function displayResults(data) {
+      let html = "<table class='results-table'>";
+      html += `
+        <tr>
+          <th>Town</th>
+          <th>Total Donated</th>
+        </tr>
+      `;
+
+      data.forEach(row => {
+        html += `
+          <tr>
+            <td>${row.memberTown}</td>
+            <td>£${Number(row.totalDonated).toFixed(2)}</td>
+          </tr>
+        `;
+      });
+
+      html += "</table>";
+      resultsDiv.innerHTML = html;
+    }
+
+    function drawChart(data) {
+      const ctx = document.getElementById("donationChart");
+
+      const labels = data.map(row => row.memberTown);
+      const values = data.map(row => Number(row.totalDonated));
+
+      // destroy old chart before creating new one
+      if (chart) {
+        chart.destroy();
+      }
+
+      chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Total Donations (£)",
+            data: values
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

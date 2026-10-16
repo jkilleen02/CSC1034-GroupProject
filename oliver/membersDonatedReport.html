@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inactive Members</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- Banner -->
+    <div class="banner">
+      <h1>WWF Donations Management</h1>
+      <p>Members Who Haven't Donated</p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav">
+      <a href="addRecord.html">Add a Record</a> |
+      <a href="deleteRecords.html">Delete a Record</a> |
+      <a href="updateRecords.html">Update a Record</a> |
+      <a href="donationReports.html">Donation Reports</a> |
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+      <h2>Inactive Members</h2>
+      <p>List of members who have not made any donations.</p>
+
+      <br><hr><br>
+
+      <button id="loadBtn">Load Report</button>
+
+      <div id="output" class="message"></div>
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <script src="js/myJs.js"></script>
+
+  <script>
+    const output = document.querySelector("#output");
+    const resultsDiv = document.querySelector("#results");
+
+    const showMessage = (text, type) => {
+      output.textContent = text;
+      output.className = `message ${type}`;
+    };
+
+    document.querySelector("#loadBtn").addEventListener("click", async () => {
+
+      const sql = `SELECT 
+          m.memberID,
+          m.memberEmail
+        FROM tblmembers m
+        LEFT JOIN tbldonations d 
+          ON m.memberID = d.memberID
+        WHERE d.memberID IS NULL;
+      `;
+
+      const result = await runQuery(sql);
+
+      if (result && result.data && result.data.length > 0) {
+        showMessage(`${result.data.length} inactive member(s) found.`, "success");
+        displayResults(result.data);
+      } else {
+        showMessage("All members have donated.", "success");
+        resultsDiv.innerHTML = "";
+      }
+    });
+
+    function displayResults(data) {
+      let html = "<table class='results-table'>";
+      html += `
+        <tr>
+          <th>Member ID</th>
+          <th>Email</th>
+        </tr>
+      `;
+
+      data.forEach(row => {
+        html += `
+          <tr>
+            <td>${row.memberID}</td>
+            <td>${row.memberEmail}</td>
+          </tr>
+        `;
+      });
+
+      html += "</table>";
+      resultsDiv.innerHTML = html;
+    }
+  </script>
+
+</body>
+</html>

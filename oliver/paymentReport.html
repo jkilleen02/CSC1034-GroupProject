@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment Method Report</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- Banner -->
+    <div class="banner">
+      <h1>WWF Donations Management</h1>
+      <p>Most Popular Payment Methods</p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav">
+      <a href="addRecord.html">Add a Record</a> |
+      <a href="deleteRecords.html">Delete a Record</a> |
+      <a href="updateRecords.html">Update a Record</a> |
+      <a href="donationReports.html">Donation Reports</a> |
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+      <h2>Payment Method Report</h2>
+      <p>Shows which payment methods are used the most.</p>
+
+      <br>
+      <hr>
+      <br>
+
+      <button id="loadBtn">Load Report</button>
+
+      <div id="output" class="message"></div>
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <script src="js/myJs.js"></script>
+
+  <script>
+    const output = document.querySelector("#output");
+    const resultsDiv = document.querySelector("#results");
+
+    const showMessage = (text, type) => {
+      output.textContent = text;
+      output.className = `message ${type}`;
+    };
+
+    document.querySelector("#loadBtn").addEventListener("click", async () => {
+
+      const sql = `SELECT 
+          COALESCE(paymentMethod, 'Not specified') AS paymentMethod,
+          SUM(amountDonated) AS totalAmount,
+          COUNT(*) AS totalTransactions
+        FROM tbldonations
+        GROUP BY paymentMethod
+        ORDER BY totalTransactions DESC;
+      `;
+
+      const result = await runQuery(sql);
+
+      if (result && result.data && result.data.length > 0) {
+        showMessage("Report loaded successfully.", "success");
+        displayResults(result.data);
+      } else {
+        showMessage("No data found.", "error");
+        resultsDiv.innerHTML = "";
+      }
+    });
+
+    function displayResults(data) {
+      let html = "<table class='results-table'>";
+      html += `
+        <tr>
+          <th>Payment Method</th>
+          <th>Total Amount (£)</th>
+          <th>Number of Donations</th>
+        </tr>
+      `;
+
+      data.forEach(row => {
+        html += `
+          <tr>
+            <td>${row.paymentMethod}</td>
+            <td>£${Number(row.totalAmount).toFixed(2)}</td>
+            <td>${row.totalTransactions}</td>
+          </tr>
+        `;
+      });
+
+      html += "</table>";
+      resultsDiv.innerHTML = html;
+    }
+  </script>
+
+</body>
+</html>

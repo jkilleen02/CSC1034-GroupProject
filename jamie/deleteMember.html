@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link href="css/styles.css" type="text/css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Animal Rescue NI</title>
+</head>
+
+<body>
+    <h1 id="title">Animal Rescue NI <xsmall>&copy; 2026</xsmall>
+    </h1>
+    <div id="header">
+        <h2>Welcome to the Animal Rescue NI</h2>
+        <h3>Helping restore our wildlife!</h3>
+        <div class="return-buttons">
+            <h4><a href="memberIndex.html">Return to Member Dashboard</a><a href="index.html">Return to Main
+                    Menu</a>
+            </h4>
+        </div>
+        <div class="main">
+            <br>
+            <hr>
+            <br>
+            <h2>Delete A Member</h2>
+            <h3>Select A Member from the table</h3>
+            <div id="tableOutput"></div>
+            <br>
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+    <script src="js/myJs.js"></script>
+    <script>
+        const showMessage = (text, type) => {
+            const output = document.querySelector('#message');
+            output.textContent = text;
+            output.className = `message ${type}`;
+        }
+        const printTable = async () => {
+            const output = document.querySelector("#tableOutput");
+            output.textContent = "";
+            const sql = "SELECT * FROM tblmembers ORDER BY memberID;";
+            const result = await runQuery(sql);
+            if (!result || !result.data || result.data.length === 0) {
+                output.textContent = "No Rows Returned";
+                return;
+            }
+            const rows = result.data;
+            const table = document.createElement("table");
+            table.className = "report-table";
+            const headerRow = document.createElement("tr");
+            table.appendChild(headerRow);
+            const headings = ["Member ID", "First Name", "Last Name", "Phone Number", "Email", "House Number", "Street", "Town", "Date of Birth", "Membership Type", "Action"];
+            for (let heading of headings) {
+                const th = document.createElement("th");
+                th.textContent = heading;
+                headerRow.appendChild(th);
+            }
+            for (let row of rows) {
+                const tr = document.createElement("tr");
+
+                const tdMemberId = document.createElement("td");
+                tdMemberId.textContent = row.memberID;
+                tr.appendChild(tdMemberId);
+
+                const tdMemberFirstName = document.createElement("td");
+                tdMemberFirstName.textContent = row.memberFirstName;
+                tr.appendChild(tdMemberFirstName);
+
+                const tdMemberLastName = document.createElement("td");
+                tdMemberLastName.textContent = row.memberLastName;
+                tr.appendChild(tdMemberLastName);
+
+                const tdMemberPhoneNo = document.createElement("td");
+                tdMemberPhoneNo.textContent = row.memberPhoneNo;
+                tr.appendChild(tdMemberPhoneNo);
+
+                const tdMemberEmail = document.createElement("td");
+                tdMemberEmail.textContent = row.memberEmail;
+                tr.appendChild(tdMemberEmail);
+
+                const tdMemberHouseNumber = document.createElement("td");
+                tdMemberHouseNumber.textContent = row.memberHouseNumber;
+                tr.appendChild(tdMemberHouseNumber);
+
+                const tdMemberStreet = document.createElement("td");
+                tdMemberStreet.textContent = row.memberStreet;
+                tr.appendChild(tdMemberStreet);
+
+                const tdMemberTown = document.createElement("td");
+                tdMemberTown.textContent = row.memberTown;
+                tr.appendChild(tdMemberTown);
+
+                const tdMemberDOB = document.createElement("td");
+                tdMemberDOB.textContent = row.memberDOB;
+                tr.appendChild(tdMemberDOB);
+
+                const tdMembershipType = document.createElement("td");
+                tdMembershipType.textContent = row.membershipType;
+                tr.appendChild(tdMembershipType);
+
+                //
+                const tdDelete = document.createElement("td");
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete " + row.memberID;
+                deleteButton.addEventListener("click", async () => {
+                    const shouldDelete = confirm(`Delete Member ${row.memberID}?`);
+                    if (!shouldDelete) {
+                        return;
+                    }
+                    const deleteSQL = `DELETE FROM tblmembers WHERE memberID=${row.memberID};`;
+                    console.log(deleteSQL);
+                    const deleteResult = await runQuery(deleteSQL);
+                    if (deleteResult && deleteResult.success) {
+                        showMessage("Member record deleted SUCCESSFULLY", "success");
+                        printTable();
+                        return;
+                    }
+                    if (deleteResult && deleteResult.error) {
+                        showMessage(deleteResult.error, "error");
+                    } else {
+                        showMessage("Member record delete FAILED", "error");
+                    }
+                });
+                tdDelete.appendChild(deleteButton);
+                tr.appendChild(tdDelete);
+                table.appendChild(tr);
+            }
+            output.appendChild(table);
+        };
+        document.addEventListener("DOMContentLoaded", () => {
+            printTable();
+        });
+    </script>
+</body>
+
+</html>

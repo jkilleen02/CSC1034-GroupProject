@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link href="css/styles.css" type="text/css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Animal Rescue NI</title>
+</head>
+
+<body>
+    <h1 id="title">Animal Rescue NI <xsmall>&copy; 2026</xsmall>
+    </h1>
+    <div id="header">
+        <h2>Welcome to the Animal Rescue NI</h2>
+        <h3>Helping restore our wildlife!</h3>
+        <div class="return-buttons">
+            <h4><a href="adoptionsIndex.html">Return to Adoption Dashboard</a><a href="index.html">Return to Main
+                    Menu</a>
+        </div>
+        </h4>
+        <div class="main">
+            <br>
+            <hr>
+            <br>
+            <h2>Register An Adoption</h2>
+        </div>
+        <!--Create the member registration form-->
+        <form id="adoptionForm">
+            <div class="form-row">
+                <label for="adoptionFee">Adoption Fee</label>
+                <input type="text" id="adoptionFee">
+            </div>
+            <div class="form-row">
+                <label for="animalID">Animal ID</label>
+                <input type="text" id="animalID">
+            </div>
+            <div class="form-row">
+                <label for="adoptionStatus">Adoption Status</label>
+                <input type="text" id="adoptionStatus">
+            </div>
+            <div class="form-row">
+                <label for="memberID">Member ID</label>
+                <input type="text" id="memberID">
+            </div>
+            <div class="form-row">
+                <label for="adoptionDate">Adoption Date</label>
+                <input type="number" id="adoptionDate">
+            </div>
+
+            <button type="submit">Register Adoption</button>
+
+        </form>
+        <div id="output" class="message"></div>
+    </div>
+    <script src="js/myJs.js"></script>
+    <script>
+        const showMessage = (text, type) => {
+            const output = document.querySelector("#output");
+            output.textContent = text;
+            output.className = `message ${type}`;
+        };
+        document.querySelector("#adoptionForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const adoption = {
+                adoptionFee: document.querySelector("#adoptionFee").value.trim(),
+                animalID: Number(document.querySelector("#animalID").value),
+                adoptionStatus: document.querySelector("#adoptionStatus").value.trim(),
+                memberID: Number(document.querySelector("#memberID").value),
+                adoptionDate: document.querySelector("#adoptionID").value.trim()
+            }
+            const validationMessage = validateMember(member);
+            if (validationMessage) {
+                showMessage(validationMessage, "error");
+                return;
+            }
+            //Sql to insert values into the database
+            const sql = `
+INSERT INTO tbladoption (
+  adoptionFee,
+  animalID,
+  adoptionStatus,
+  memberID,
+  adoptionDate
+)
+VALUES (
+${adoption.adoptionFee},
+  '${adoption.animalID}',
+  '${escapeSql(adoption.animalStatus)}',
+  ${adoption.memberID},
+  '${escapeSql(adoption.adoptionDate)}'
+);
+`;
+            const result = await runQuery(sql);
+            if (result && result.success) {
+                showMessage("Adoption Registration Successful!", "success");
+                document.querySelector("#adoptionForm").reset();
+                return;
+            }
+            if (Array.isArray(result)) {
+                showMessage("Adoption Registration Successful!", "success");
+                document.querySelector("#adoptionForm").reset();
+                return;
+            }
+            if (result && result.error) {
+                showMessage(result.error, "error");
+            } else {
+                showMessage("Unable to Register Adoption!", "error");
+            }
+
+        });
+    </script>
+</body>
+
+</html>

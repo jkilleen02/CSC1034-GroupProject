@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search Donations</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- Banner -->
+    <div class="banner">
+      <h1>WWF Donations Management</h1>
+      <p>Search by Payment Method</p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav">
+      <a href="addRecord.html">Add a Record</a> |
+      <a href="deleteRecords.html">Delete a Record</a> |
+      <a href="updateRecords.html">Update a Record</a> |
+      <a href="donationReports.html">Donation Reports</a> 
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <h2>Search Donations</h2>
+      <p>Select a payment method to view matching records.</p>
+
+      <br>
+      <hr>
+      <br>
+
+      <!-- Search Form -->
+      <form id="searchForm">
+
+        <div class="form-row">
+          <label for="paymentMethod">Payment Method</label>
+          <select id="paymentMethod">
+            <option value="">--Select--</option>
+            <option value="Cash">Cash</option>
+            <option value="Card">Card</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Other">Other</option>
+        </select>
+        </div>
+
+        <button type="submit">Search</button>
+      </form>
+
+      <!-- Message / Results -->
+      <div id="output" class="message"></div>
+
+      <!-- Results Table -->
+      <div id="results"></div>
+
+    </div>
+  </div>
+
+  <script src="js/myJs.js"></script>
+
+  <script>
+    const output = document.querySelector("#output");
+    const resultsDiv = document.querySelector("#results");
+
+    const showMessage = (text, type) => {
+      output.textContent = text;
+      output.className = `message ${type}`;
+    };
+
+    document.querySelector("#searchForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const paymentMethod = document.querySelector("#paymentMethod").value;
+
+      if (!paymentMethod) {
+        showMessage("Please select a payment method.", "error");
+        resultsDiv.innerHTML = "";
+        return;
+      }
+
+      const sql = `SELECT * FROM tbldonations WHERE paymentMethod = '${escapeSql(paymentMethod)}';`;
+
+      const result = await runQuery(sql);
+
+      if (result && result.data && result.data.length > 0) {
+        showMessage(`${result.data.length} record(s) found.`, "success");
+        displayResults(result.data);
+      } else {
+        showMessage("No records found.", "error");
+        resultsDiv.innerHTML = "";
+      }
+    });
+
+    function displayResults(data) {
+      let html = "<table class='results-table'>";
+      html += `
+        <tr>
+          <th>Donation ID</th>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Payment</th>
+          <th>Member ID</th>
+          <th>Fundraiser ID</th>
+        </tr>
+      `;
+
+      data.forEach(row => {
+        html += `
+          <tr>
+            <td>${row.donationID}</td>
+            <td>${row.donationDate}</td>
+            <td>${row.amountDonated}</td>
+            <td>${row.paymentMethod}</td>
+            <td>${row.memberID}</td>
+            <td>${row.fundraiserID}</td>
+          </tr>
+        `;
+      });
+
+      html += "</table>";
+      resultsDiv.innerHTML = html;
+    }
+  </script>
+
+</body>
+</html>

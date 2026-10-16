@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link href="css/styles.css" type="text/css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Animal Rescue NI</title>
+</head>
+
+<body>
+    <h1 id="title">Animal Rescue NI <xsmall>&copy; 2026</xsmall>
+    </h1>
+    <div id="header">
+        <h2>Welcome to the Animal Rescue NI</h2>
+        <h3>Helping restore our wildlife!</h3>
+        <div class="return-buttons">
+            <h4><a href="memberIndex.html">Return to Member Dashboard</a><a href="index.html">Return to Main
+                    Menu</a><a href="memberReports.html">Return to Member Reports</a></h4>
+        </div>
+        <div class="main">
+            <br>
+            <hr>
+            <br>
+            <h2>Search Member by First Name</h2>
+            <form id="searchForm">
+                <label for="firstNameSearch">Enter Member's First Name:</label>
+                <input type="text" id="firstNameSearch" name="" firstNameSearch>
+                <button type="submit">Search</button>
+            </form>
+            <div id="output"></div>
+        </div>
+    </div>
+    <script src="js/myJs.js"></script>
+    <script>
+        const printTable = async () => {
+            const output = document.querySelector("#output");
+            output.textContent = "";
+            const input = document.querySelector("#firstNameSearch");
+            const searchTerm = input.value.trim();
+
+            if (searchTerm === "") {
+                output.textContent = "No Search Term Entered";
+                return;
+            }
+            const sql = `SELECT memberID,memberFirstName,memberLastName,memberPhoneNo,memberEmail FROM tblmembers WHERE memberFirstName LIKE '%${searchTerm}%';`;
+            console.log(sql);
+            const result = await runQuery(sql);
+            if (!result || result.data.length === 0) {
+                output.textContent = "No Rows Returned";
+                return;
+            }
+            const rows = result.data;
+            const table = document.createElement("table");
+            table.className = "report-table";
+            const headerRow = document.createElement("tr");
+            const thMemberId = document.createElement("th");
+            const thMemberFirstName = document.createElement("th");
+            const thMemberLastName = document.createElement("th");
+            const thMemberPhoneNo = document.createElement("th");
+            const thMemberEmail = document.createElement("th");
+
+            thMemberId.textContent = "Member ID";
+            thMemberFirstName.textContent = "First Name";
+            thMemberLastName.textContent = "Last Name";
+            thMemberPhoneNo.textContent = "Phone Number";
+            thMemberEmail.textContent = "Email";
+            headerRow.appendChild(thMemberId);
+            headerRow.appendChild(thMemberFirstName);
+            headerRow.appendChild(thMemberLastName);
+            headerRow.appendChild(thMemberPhoneNo);
+            headerRow.appendChild(thMemberEmail);
+            table.appendChild(headerRow);
+
+            for (let row of rows) {
+                const tr = document.createElement("tr");
+                const tdMemberId = document.createElement("td");
+                const tdMemberFirstName = document.createElement("td");
+                const tdMemberLastName = document.createElement("td");
+                const tdMemberPhoneNo = document.createElement("td");
+                const tdMemberEmail = document.createElement("td");
+
+                tdMemberId.textContent = row.memberID;
+                tdMemberFirstName.textContent = row.memberFirstName;
+                tdMemberLastName.textContent = row.memberLastName;
+                tdMemberPhoneNo.textContent = row.memberPhoneNo;
+                tdMemberEmail.textContent = row.memberEmail;
+
+                tr.appendChild(tdMemberId);
+                tr.appendChild(tdMemberFirstName);
+                tr.appendChild(tdMemberLastName);
+                tr.appendChild(tdMemberPhoneNo);
+                tr.appendChild(tdMemberEmail);
+
+                table.appendChild(tr);
+            }
+            output.appendChild(table);
+        }
+        document.querySelector("#searchForm").addEventListener("submit", (event) => {
+            event.preventDefault();
+            printTable();
+        })
+    </script>
+</body>
+
+</html>

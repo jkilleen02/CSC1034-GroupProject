@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fundraiser Management</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h1>Fundraiser Management</h1>
+
+<h2>Add Fundraiser</h2>
+
+<input id="name" placeholder="Fundraiser Name">
+<input id="location" placeholder="Location">
+<input id="target" placeholder="Target Amount">
+
+<br><br>
+<button onclick="addFundraiser()">Add Fundraiser</button>
+
+<h2>All Fundraisers</h2>
+
+<button onclick="loadFundraisers()">Show Fundraisers</button>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Location</th>
+            <th>Target Amount</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="table"></tbody>
+</table>
+
+<h2>Fundraiser Targets Chart</h2>
+
+<canvas id="myChart" width="400" height="200"></canvas>
+
+<script src="fundraisers.js"></script>
+
+</body>
+</html>

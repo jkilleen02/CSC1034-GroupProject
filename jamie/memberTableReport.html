@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <link href="css/styles.css" type="text/css" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Animal Rescue NI</title>
+</head>
+
+<body>
+  <h1 id="title">Animal Rescue NI <xsmall>&copy; 2026</xsmall>
+  </h1>
+  <div id="header">
+    <h2>Welcome to the Animal Rescue NI</h2>
+    <h3>Helping restore our wildlife!</h3>
+    <div class="return-buttons">
+      <h4><a href="memberIndex.html">Return to Member Dashboard</a><a href="index.html">Return to Main Menu</a><a
+          href="memberReports.html">Return to Member Reports</a></h4>
+    </div>
+    <div class="main">
+      <br>
+      <hr>
+      <br>
+      <h2>All Members</h2>
+      <div id="output"></div>
+    </div>
+  </div>
+  <script src="js/myJs.js"></script>
+  <script>
+    const printTable = async () => {
+      const output = document.querySelector("#output");
+      //Sql for the fields in the database
+      const sql = "SELECT memberID, memberFirstName, memberLastName, memberPhoneNo, memberEmail, memberHouseNumber, memberStreet, memberTown, memberDOB, membershipType FROM tblmembers;";
+      const result = await runQuery(sql);
+      //If there is no data allow it to stop
+      if (!result || result.data.length === 0) {
+        output.textContent = "No Rows Returned";
+        return;
+      }
+      const rows = result.data;
+      //Create the table
+      const table = document.createElement("table");
+      table.className = "report-table";
+      //Create the header row 
+      const headerRow = document.createElement("tr");
+      const thMemberId = document.createElement("th");
+      const thMemberFirstName = document.createElement("th");
+      const thMemberLastName = document.createElement("th");
+      const thMemberPhoneNo = document.createElement("th");
+      const thMemberEmail = document.createElement("th");
+      const thMemberHouseNumber = document.createElement("th");
+      const thMemberStreet = document.createElement("th");
+      const thMemberTown = document.createElement("th");
+      const thMemberDOB = document.createElement("th");
+      const thMembershipType = document.createElement("th");
+      //Input the labels of each header section
+      thMemberId.textContent = "Member ID";
+      thMemberFirstName.textContent = "First Name";
+      thMemberLastName.textContent = "Last Name";
+      thMemberPhoneNo.textContent = "Phone Number";
+      thMemberEmail.textContent = "Email";
+      thMemberHouseNumber.textContent = "House Number";
+      thMemberStreet.textContent = "Street";
+      thMemberTown.textContent = "Town";
+      thMemberDOB.textContent = "Date of Birth";
+      thMembershipType.textContent = "Membership Type";
+      //Place the labels into the header row
+      headerRow.appendChild(thMemberId);
+      headerRow.appendChild(thMemberFirstName);
+      headerRow.appendChild(thMemberLastName);
+      headerRow.appendChild(thMemberPhoneNo);
+      headerRow.appendChild(thMemberEmail);
+      headerRow.appendChild(thMemberHouseNumber);
+      headerRow.appendChild(thMemberStreet);
+      headerRow.appendChild(thMemberTown);
+      headerRow.appendChild(thMemberDOB);
+      headerRow.appendChild(thMembershipType);
+      table.appendChild(headerRow);
+      //Create one table row for each member
+      for (let row of rows) {
+        const tr = document.createElement("tr");
+        const tdMemberId = document.createElement("td");
+        const tdMemberFirstName = document.createElement("td");
+        const tdMemberLastName = document.createElement("td");
+        const tdMemberPhoneNo = document.createElement("td");
+        const tdMemberEmail = document.createElement("td");
+        const tdMemberHouseNumber = document.createElement("td");
+        const tdMemberStreet = document.createElement("td");
+        const tdMemberTown = document.createElement("td");
+        const tdMemberDOB = document.createElement("td");
+        const tdMembershipType = document.createElement("td");
+        //Insert data into the table
+        tdMemberId.textContent = row.memberID;
+        tdMemberFirstName.textContent = row.memberFirstName;
+        tdMemberLastName.textContent = row.memberLastName;
+        tdMemberPhoneNo.textContent = row.memberPhoneNo;
+        tdMemberEmail.textContent = row.memberEmail;
+        tdMemberHouseNumber.textContent = row.memberHouseNumber;
+        tdMemberStreet.textContent = row.memberStreet;
+        tdMemberTown.textContent = row.memberTown;
+        tdMemberDOB.textContent = row.memberDOB;
+        tdMembershipType.textContent = row.membershipType;
+        tr.appendChild(tdMemberId);
+        tr.appendChild(tdMemberFirstName);
+        tr.appendChild(tdMemberLastName);
+        tr.appendChild(tdMemberPhoneNo);
+        tr.appendChild(tdMemberEmail);
+        tr.appendChild(tdMemberHouseNumber);
+        tr.appendChild(tdMemberStreet);
+        tr.appendChild(tdMemberTown);
+        tr.appendChild(tdMemberDOB);
+        tr.appendChild(tdMembershipType);
+        table.appendChild(tr);
+
+      }
+      output.appendChild(table);
+    }
+    document.addEventListener("DOMContentLoaded", printTable);
+  </script>
+</body>
+
+</html>

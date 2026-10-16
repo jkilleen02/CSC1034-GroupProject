@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link href="css/styles.css" type="text/css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Animal Rescue NI</title>
+</head>
+
+<body>
+    <h1 id="title">Animal Rescue NI <xsmall>&copy; 2026</xsmall>
+    </h1>
+    <div id="header">
+        <h2>Welcome to the Animal Rescue NI</h2>
+        <h3>Helping restore our wildlife!</h3>
+        <div class="return-buttons">
+            <h4><a href="memberIndex.html">Return to Member Dashboard</a><a href="index.html">Return to Main
+                    Menu</a>
+            </h4>
+        </div>
+        <div class="main">
+            <br>
+            <hr>
+            <br>
+            <h2>Update A Member</h2>
+            <h3 id="selectedMemberText">Choose Below</h3>
+            <div id="tableOutput"></div>
+            <!--Create the form to allow users to update details-->
+            <form id="updateForm">
+                <input type="hidden" id="memberID">
+                <div class="form-row">
+                    <label for="memberFirstName">First Name</label>
+                    <input type="text" id="memberFirstName">
+                </div>
+                <div class="form-row">
+                    <label for="memberLastName">Last Name</label>
+                    <input type="text" id="memberLastName">
+                </div>
+                <div class="form-row">
+                    <label for="memberPhoneNo">Phone Number</label>
+                    <input type="text" id="memberPhoneNo">
+                </div>
+                <div class="form-row">
+                    <label for="memberEmail">Email</label>
+                    <input type="text" id="memberEmail">
+                </div>
+                <div class="form-row">
+                    <label for="memberHouseNumber">House Number</label>
+                    <input type="number" id="memberHouseNumber">
+                </div>
+                <div class="form-row">
+                    <label for="memberStreet">Street Name</label>
+                    <input type="text" id="memberStreet">
+                </div>
+                <div class="form-row">
+                    <label for="memberTown">Town</label>
+                    <input type="text" id="memberTown">
+                </div>
+                <div class="form-row">
+                    <label for="memberDOB">Date of Birth</label>
+                    <input type="date" id="memberDOB">
+                </div>
+                <div class="form-row">
+                    <label for="membershipType">Membership</label>
+                    <input type="text" id="membershipType">
+                </div>
+                <button type="submit">Update Member</button>
+            </form>
+            <div id="output"></div>
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script src="js/myJs.js"></script>
+    <script>
+        //Stores the chosen member
+        let selectedMemberID = null;
+        //Error/success messages are shown
+        const showMessage = (text, type) => {
+            const output = document.querySelector("#message");
+            output.textContent = text;
+            output.className = `message ${type}`;
+        };
+        //Remove old messages for update to date feedback
+        const clearMessage = () => {
+            const output = document.querySelector("#message");
+            output.textContent = "";
+            output.className = "message";
+        };
+        //After updating the form will be blank again
+        const resetForm = () => {
+            const form = document.querySelector("#updateForm");
+            const selectedMemberText = document.querySelector("#selectedMemberText");
+            form.reset();
+            selectedMemberID = null;
+            selectedMemberText.textContent = "Select a Member from the Table";
+        };
+        //The data of the chosen member on the table will be in the form
+        const selectMember = (member) => {
+            const selectedMemberText = document.querySelector("#selectedMemberText");
+            selectedMemberID = Number(member.memberID);
+            document.querySelector("#memberID").value = member.memberID;
+            document.querySelector("#memberFirstName").value = member.memberFirstName;
+            document.querySelector("#memberLastName").value = member.memberLastName;
+            document.querySelector("#memberPhoneNo").value = member.memberPhoneNo;
+            document.querySelector("#memberEmail").value = member.memberEmail;
+            document.querySelector("#memberHouseNumber").value = member.memberHouseNumber;
+            document.querySelector("#memberStreet").value = member.memberStreet;
+            document.querySelector("#memberTown").value = member.memberTown;
+            document.querySelector("#memberDOB").value = member.memberDOB;
+            document.querySelector("#membershipType").value = member.membershipType;
+            selectedMemberText.textContent = `Updating Member ${member.memberID}:${member.memberFirstName}${member.memberLastName}`;
+            clearMessage();
+        };
+        const printTable = async () => {
+            const output = document.querySelector("#tableOutput");
+            output.textContent = "";
+            //Sql report to select all details from members
+            const sql = "SELECT * FROM tblmembers ORDER BY memberID;";
+            const result = await runQuery(sql);
+            if (!result || !result.data || result.data.length === 0) {
+                output.textContent = "No Rows Returned";
+                return;
+            }
+            //Create the table and headings to allow a user to choose a member to update
+            const rows = result.data;
+            const table = document.createElement("table");
+            table.className = "report-table";
+            const headerRow = document.createElement("tr");
+            table.appendChild(headerRow);
+            const headings = ["Member ID", "First Name", "Last Name", "Phone Number", "Email", "House Number", "Street", "Town", "Date of Birth", "Membership Type", "Action"];
+            for (let heading of headings) {
+                const th = document.createElement("th");
+                th.textContent = heading;
+                headerRow.appendChild(th);
+            }
+            for (let row of rows) {
+                const tr = document.createElement("tr");
+
+                const tdMemberId = document.createElement("td");
+                tdMemberId.textContent = row.memberID;
+                tr.appendChild(tdMemberId);
+
+                const tdMemberFirstName = document.createElement("td");
+                tdMemberFirstName.textContent = row.memberFirstName;
+                tr.appendChild(tdMemberFirstName);
+
+                const tdMemberLastName = document.createElement("td");
+                tdMemberLastName.textContent = row.memberLastName;
+                tr.appendChild(tdMemberLastName);
+
+                const tdMemberPhoneNo = document.createElement("td");
+                tdMemberPhoneNo.textContent = row.memberPhoneNo;
+                tr.appendChild(tdMemberPhoneNo);
+
+                const tdMemberEmail = document.createElement("td");
+                tdMemberEmail.textContent = row.memberEmail;
+                tr.appendChild(tdMemberEmail);
+
+                const tdMemberHouseNumber = document.createElement("td");
+                tdMemberHouseNumber.textContent = row.memberHouseNumber;
+                tr.appendChild(tdMemberHouseNumber);
+
+                const tdMemberStreet = document.createElement("td");
+                tdMemberStreet.textContent = row.memberStreet;
+                tr.appendChild(tdMemberStreet);
+
+                const tdMemberTown = document.createElement("td");
+                tdMemberTown.textContent = row.memberTown;
+                tr.appendChild(tdMemberTown);
+
+                const tdMemberDOB = document.createElement("td");
+                tdMemberDOB.textContent = row.memberDOB;
+                tr.appendChild(tdMemberDOB);
+
+                const tdMembershipType = document.createElement("td");
+                tdMembershipType.textContent = row.membershipType;
+                tr.appendChild(tdMembershipType);
+
+                const tdUpdate = document.createElement("td");
+                const updateButton = document.createElement("button");
+                updateButton.textContent = "Update";
+
+                updateButton.addEventListener("click", () => {
+                    selectMember(row);
+                });
+                tdUpdate.appendChild(updateButton);
+                tr.appendChild(tdUpdate);
+                table.appendChild(tr);
+            }
+            output.appendChild(table);
+        };
+        document.addEventListener("DOMContentLoaded", () => {
+            resetForm();
+            printTable();
+        });
+        document.querySelector("#updateForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            //Ensure the user chooses a member to update
+            if (selectedMemberID === null) {
+                showMessage("Select a Member from the Table before updating", "error");
+                return;
+            }
+            const member = {
+                memberID: Number(document.querySelector("#memberID").value),
+                memberFirstName: document.querySelector("#memberFirstName").value.trim(),
+                memberLastName: document.querySelector("#memberLastName").value.trim(),
+                memberPhoneNo: document.querySelector("#memberPhoneNo").value.trim(),
+                memberEmail: document.querySelector("#memberEmail").value.trim(),
+                memberHouseNumber: Number(document.querySelector("#memberHouseNumber").value),
+                memberStreet: document.querySelector("#memberStreet").value.trim(),
+                memberTown: document.querySelector("#memberTown").value.trim(),
+                memberDOB: document.querySelector("#memberDOB").value.trim(),
+                membershipType: document.querySelector("#membershipType").value.trim()
+
+            };
+            const validationMessage = validateMember(member);
+            if (validationMessage) {
+                showMessage(validationMessage, "error");
+                return;
+            }
+            const sql = `
+            UPDATE tblmembers
+            SET
+            memberFirstName='${escapeSql(member.memberFirstName)}',
+            memberLastName='${escapeSql(member.memberLastName)}',
+            memberPhoneNo='${escapeSql(member.memberPhoneNo)}',
+            memberEmail='${escapeSql(member.memberEmail)}',
+            memberHouseNumber=${member.memberHouseNumber},
+            memberStreet='${escapeSql(member.memberStreet)}',
+            memberTown='${escapeSql(member.memberTown)}',
+            memberDOB='${escapeSql(member.memberDOB)}',
+            membershipType='${escapeSql(member.membershipType)}'
+            WHERE memberID=${selectedMemberID};
+            `;
+            const result = await runQuery(sql);
+            if (result && result.success) {
+                showMessage("Member Update SUCCESS", "success")
+                resetForm();
+                printTable();
+                return;
+            }
+            if (result && result.error) {
+                showMessage(result.error, "error");
+            } else {
+                showMessage("Member Update FAILED", "error");
+
+            }
+
+        })
+    </script>
+</body>
+
+</html>

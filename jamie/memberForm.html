@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link href="css/styles.css" type="text/css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Animal Rescue NI</title>
+</head>
+
+<body>
+    <h1 id="title">Animal Rescue NI <xsmall>&copy; 2026</xsmall>
+    </h1>
+    <div id="header">
+        <h2>Welcome to the Animal Rescue NI</h2>
+        <h3>Helping restore our wildlife!</h3>
+        <div class="return-buttons">
+            <h4><a href="memberIndex.html">Return to Member Dashboard</a><a href="index.html">Return to Main
+                    Menu</a>
+        </div>
+        </h4>
+        <div class="main">
+            <br>
+            <hr>
+            <br>
+            <h2>Member Registration</h2>
+        </div>
+        <!--Create the member registration form-->
+        <form id="memberForm">
+            <div class="form-row">
+                <label for="memberFirstName">First Name</label>
+                <input type="text" id="memberFirstName">
+            </div>
+            <div class="form-row">
+                <label for="memberLastName">Last Name</label>
+                <input type="text" id="memberLastName">
+            </div>
+            <div class="form-row">
+                <label for="memberPhoneNo">Phone Number</label>
+                <input type="text" id="memberPhoneNo">
+            </div>
+            <div class="form-row">
+                <label for="memberEmail">Email</label>
+                <input type="text" id="memberEmail">
+            </div>
+            <div class="form-row">
+                <label for="memberHouseNumber">House Number</label>
+                <input type="number" id="memberHouseNumber">
+            </div>
+            <div class="form-row">
+                <label for="memberStreet">Street Name</label>
+                <input type="text" id="memberStreet">
+            </div>
+            <div class="form-row">
+                <label for="memberTown">Town</label>
+                <input type="text" id="memberTown">
+            </div>
+            <div class="form-row">
+                <label for="memberDOB">Date of Birth</label>
+                <input type="date" id="memberDOB">
+            </div>
+            <div class="form-row">
+                <label for="membershipType">Membership</label>
+                <input type="text" id="membershipType">
+            </div>
+
+            <button type="submit">Register Member</button>
+
+        </form>
+        <div id="output" class="message"></div>
+    </div>
+    <script src="js/myJs.js"></script>
+    <script>
+        const showMessage = (text, type) => {
+            const output = document.querySelector("#output");
+            output.textContent = text;
+            output.className = `message ${type}`;
+        };
+        document.querySelector("#memberForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const member = {
+                memberFirstName: document.querySelector("#memberFirstName").value.trim(),
+                memberLastName: document.querySelector("#memberLastName").value.trim(),
+                memberPhoneNo: document.querySelector("#memberPhoneNo").value.trim(),
+                memberEmail: document.querySelector("#memberEmail").value.trim(),
+                memberHouseNumber: Number(document.querySelector("#memberHouseNumber").value),
+                memberStreet: document.querySelector("#memberStreet").value.trim(),
+                memberTown: document.querySelector("#memberTown").value.trim(),
+                memberDOB: document.querySelector("#memberDOB").value.trim(),
+                membershipType: document.querySelector("#membershipType").value.trim()
+            }
+            const validationMessage = validateMember(member);
+            if (validationMessage) {
+                showMessage(validationMessage, "error");
+                return;
+            }
+            const checkSql = `
+  SELECT memberID 
+  FROM tblmembers 
+  WHERE memberEmail = '${escapeSql(member.memberEmail)}';
+`;
+
+            const existing = await runQuery(checkSql);
+
+            if (existing && existing.length > 0) {
+                showMessage("Email already registered — please use a different email.", "error");
+                return;
+            }
+            //Sql to insert values into the database
+            const sql = `
+INSERT INTO tblmembers (
+  memberFirstName,
+  memberLastName,
+  memberPhoneNo,
+  memberEmail,
+  memberHouseNumber,
+  memberStreet,
+  memberTown,
+  memberDOB,
+  membershipType
+)
+VALUES (
+  '${escapeSql(member.memberFirstName)}',
+  '${escapeSql(member.memberLastName)}',
+  '${escapeSql(member.memberPhoneNo)}',
+  '${escapeSql(member.memberEmail)}',
+  ${member.memberHouseNumber},
+  '${escapeSql(member.memberStreet)}',
+  '${escapeSql(member.memberTown)}',
+  '${escapeSql(member.memberDOB)}',
+  '${escapeSql(member.membershipType)}'
+);
+`;
+            const result = await runQuery(sql);
+            if (result && result.success) {
+                showMessage("Member Registration Successful!", "success");
+                document.querySelector("#memberForm").reset();
+                return;
+            }
+            if (Array.isArray(result)) {
+                showMessage("Member Registration Successful!", "success");
+                document.querySelector("#memberForm").reset();
+                return;
+            }
+            if (result && result.error) {
+                showMessage(result.error, "error");
+            } else {
+                showMessage("Unable to Register Member!", "error");
+            }
+
+        });
+    </script>
+</body>
+
+</html>
